@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Portraiture;
 using StardewModdingAPI;
 using StardewValley;
 namespace PortraiturePlus
@@ -7,7 +8,6 @@ namespace PortraiturePlus
 	internal sealed class PortriturePlusMod : Mod
 	{
 		private static readonly IDictionary<string, string> festivalDates = Game1.content.Load<Dictionary<string, string>>(@"Data\Festivals\FestivalDates", LocalizedContentManager.LanguageCode.en);
-		
 		/// <summary>The mod entry point, called after the mod is first loaded.</summary>
 		/// <param name="help">Provides simplified APIs for writing mods.</param>
 		public override void Entry(IModHelper help)
@@ -18,9 +18,9 @@ namespace PortraiturePlus
 
 		private void harmonyFix()
 		{
-			PortraitFix.Initialize(monitor: Monitor);
+			PortraiturePlusFix.Initialize(monitor: Monitor);
 			var harmony = new Harmony(ModManifest.UniqueID);
-			harmony.Patch(original: PortraitFix.TargetMethod(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraitFix), nameof(PortraitFix.getPortrait_Prefix))));
+			harmony.Patch(original: PortraiturePlusFix.TargetMethod(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.getPortrait_Prefix))));
 		}
 
 		internal static string GetDayEvent()
