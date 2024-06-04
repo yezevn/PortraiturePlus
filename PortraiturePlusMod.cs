@@ -71,7 +71,7 @@ namespace PortraiturePlus
 			}
 
 			var season = Game1.currentSeason ?? "spring";
-			var npcDictionary = pTextures.Keys.Where(key => key.Contains(name)).ToDictionary(k => k, l => pTextures[l]);
+			var npcDictionary = pTextures.Keys.Where(key => key.Contains(name) && key.Contains(folder)).ToDictionary(k => k, l => pTextures[l]);
 			var dayOfMonth = Game1.dayOfMonth.ToString();
 			var festival = GetDayEvent();
 			var gl = Game1.currentLocation.Name ?? "";
@@ -95,6 +95,10 @@ namespace PortraiturePlus
 			if (getTexture2D(npcDictionary, gl, season, dayOfMonth) != null)
 			{
 				return getTexture2D(npcDictionary, gl, season, dayOfMonth);
+			}
+			if (getTexture2D(npcDictionary, gl, season, week) != null)
+			{
+				return getTexture2D(npcDictionary, gl, season, week);
 			}
 			if (getTexture2D(npcDictionary, gl, season) != null)
 			{
