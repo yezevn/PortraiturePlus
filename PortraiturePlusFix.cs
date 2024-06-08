@@ -1,7 +1,6 @@
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using Portraiture;
-using Portraiture.HDP;
 using StardewModdingAPI;
 using StardewValley;
 using System.Reflection;

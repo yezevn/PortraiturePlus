@@ -112,15 +112,11 @@ namespace PortraiturePlus
 			{
 				return getTexture2D(npcDictionary, season, isOutdoors);
 			}
-			if (getTexture2D(npcDictionary, isOutdoors) != null)
+			if (getTexture2D(npcDictionary, season, dayOfMonth) != null)
 			{
-				return getTexture2D(npcDictionary, isOutdoors);
+				return getTexture2D(npcDictionary, season, dayOfMonth);
 			}
-			if (getTexture2D(npcDictionary, dayOfMonth) != null)
-			{
-				return getTexture2D(npcDictionary, dayOfMonth);
-			}
-			if (getTexture2D(npcDictionary, week) != null)
+			if (getTexture2D(npcDictionary, season, week) != null)
 			{
 				return getTexture2D(npcDictionary, week);
 			}
