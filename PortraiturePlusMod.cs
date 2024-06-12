@@ -41,7 +41,7 @@ namespace PortraiturePlus
 
 			var folder = folders[activeFolder];
 
-			if (activeFolder == 0 || folders.Count <= activeFolder || folder == "none" || (folder == "HDP" && PortraitureMod.helper.ModRegistry.IsLoaded("tlitookilakin.HDPortraits")))
+			if (activeFolder == 0 || folders.Count <= activeFolder || folder == "none" || folder == "HDP" && PortraitureMod.helper.ModRegistry.IsLoaded("tlitookilakin.HDPortraits"))
 				return null;
 
 			if (folder == "HDP" && !PortraitureMod.helper.ModRegistry.IsLoaded("tlitookilakin.HDPortraits"))
@@ -55,7 +55,7 @@ namespace PortraiturePlus
 							return null;
 						case var _ when portraits.TryGetTexture(out var texture):
 							{
-								if (portraits.Animation == null || (portraits.Animation.VFrames == 1 && portraits.Animation.HFrames == 1))
+								if (portraits.Animation == null || portraits.Animation.VFrames == 1 && portraits.Animation.HFrames == 1)
 									return ScaledTexture2D.FromTexture(tex, texture, portraits.Size / 64f);
 								portraits.Animation.Reset();
 								return new AnimatedTexture2D(texture, texture.Width / portraits.Animation.VFrames, texture.Height / portraits.Animation.HFrames, 6, true, portraits.Size / 64f);
@@ -69,9 +69,11 @@ namespace PortraiturePlus
 					return null;
 				}
 			}
-
+			
 			var season = Game1.currentSeason ?? "spring";
-			var npcDictionary = pTextures.Keys.Where(key => key.Contains(name) && key.Contains(folder)).ToDictionary(k => k, l => pTextures[l]);
+			var npcDictionary = pTextures.Keys
+				.Where(key => key.Contains(name) && key.Contains(folder))
+				.ToDictionary(k => k.ToLowerInvariant(), l => pTextures[l]);
 			var dayOfMonth = Game1.dayOfMonth.ToString();
 			var festival = GetDayEvent();
 			var gl = Game1.currentLocation.Name ?? "";
@@ -87,42 +89,24 @@ namespace PortraiturePlus
 				6 => "Saturday",
 				_ => ""
 			};
+			name = folder + ">" + name;
 
-			if (getTexture2D(npcDictionary, festival) != null)
+			var queryScenarios = new List<string[]>
 			{
-				return getTexture2D(npcDictionary, festival);
-			}
-			if (getTexture2D(npcDictionary, gl, season, dayOfMonth) != null)
+				new[] {name, festival},
+				new[] {name, gl, season, dayOfMonth}, new[] {name, gl, season, week},
+				new[] {name, gl, season},
+				new[] {name, gl, dayOfMonth}, new[] {name, gl, week},
+				new[] {name, gl},
+				new[] {name, season, isOutdoors},
+				new[] {name, season, dayOfMonth}, new[] {name, season, week},
+				new[] {name, season},
+				new[] {name}
+			};
+
+			foreach (var result in queryScenarios.Select(args => getTexture2D(npcDictionary, args)).OfType<Texture2D>())
 			{
-				return getTexture2D(npcDictionary, gl, season, dayOfMonth);
-			}
-			if (getTexture2D(npcDictionary, gl, season, week) != null)
-			{
-				return getTexture2D(npcDictionary, gl, season, week);
-			}
-			if (getTexture2D(npcDictionary, gl, season) != null)
-			{
-				return getTexture2D(npcDictionary, gl, season);
-			}
-			if (getTexture2D(npcDictionary, gl) != null)
-			{
-				return getTexture2D(npcDictionary, gl);
-			}
-			if (getTexture2D(npcDictionary, season, isOutdoors) != null)
-			{
-				return getTexture2D(npcDictionary, season, isOutdoors);
-			}
-			if (getTexture2D(npcDictionary, season, dayOfMonth) != null)
-			{
-				return getTexture2D(npcDictionary, season, dayOfMonth);
-			}
-			if (getTexture2D(npcDictionary, season, week) != null)
-			{
-				return getTexture2D(npcDictionary, week);
-			}
-			if (getTexture2D(npcDictionary, season) != null)
-			{
-				return getTexture2D(npcDictionary, season);
+				return result;
 			}
 
 			return pTextures.ContainsKey(folder + ">" + name) ? pTextures[folder + ">" + name] : null;
@@ -139,7 +123,8 @@ namespace PortraiturePlus
 		
 		private static Texture2D? getTexture2D(Dictionary<string, Texture2D> npcDictionary, params string[] values)
 		{
-			return values.Any(text => text == "") ? null : npcDictionary!.GetValueOrDefault(npcDictionary.Keys.FirstOrDefault(key => values.All(v => key.Contains(v, StringComparison.OrdinalIgnoreCase)), ""), null);
+			var key = values.Aggregate((current, next) => current + "_" + next).ToLowerInvariant().TrimEnd('_');
+			return values.Any(text => text == "") ? null : npcDictionary!.GetValueOrDefault(key, null);
 		}
 
 		private static void festivalInit()
