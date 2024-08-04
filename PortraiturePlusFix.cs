@@ -14,12 +14,24 @@ namespace PortraiturePlus
 		{
 			Monitor = monitor;
 		}
-		internal static MethodInfo TargetMethod()
+		internal static MethodInfo getPortrait()
 		{
 			return AccessTools.Method("TextureLoader:getPortrait", new[]
 			{
 				typeof(NPC), typeof(Texture2D)
 			});
+		}
+		
+		internal static MethodInfo loadAllPortraits()
+		{
+			return AccessTools.Method("TextureLoader:loadAllPortraits");
+		}
+
+		internal static void loadAllPortraits_Postfix()
+		{
+			var folders = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<List<string>>("folders").Value;
+			var pTextures = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<Dictionary<string, Texture2D>>("pTextures").Value;
+			PortraiturePlusMod.addContentPackTextures(folders, pTextures);
 		}
 
 		internal static bool getPortrait_Prefix(NPC npc, Texture2D tex, ref Texture2D? __result)

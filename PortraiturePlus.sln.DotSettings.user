@@ -1,6 +1,8 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=D_003A_005CSoftware_005CSteam_005Csteamapps_005Ccommon_005CStardew_0020Valley_005Cmods_005CPortraiture_005CPortraiture_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=E_003A_005CSteamLibrary_005Csteamapps_005Ccommon_005CStardew_0020Valley_005Cmods_005CPortraiture_005CPortraiture_002Edll/@EntryIndexedValue">True</s:Boolean>
 	
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
-  &lt;Assembly Path="D:\Software\Steam\steamapps\common\Stardew Valley\mods\Portraiture\Portraiture.dll" /&gt;&#xD;
+  &lt;Assembly Path="E:\SteamLibrary\steamapps\common\Stardew Valley\StardewValley.GameData.dll" /&gt;&#xD;
+  &lt;Assembly Path="E:\SteamLibrary\steamapps\common\Stardew Valley\mods\Portraiture\Portraiture.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

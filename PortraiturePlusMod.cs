@@ -11,20 +11,67 @@ namespace PortraiturePlus
 	// ReSharper disable once ClassNeverInstantiated.Global
 	internal sealed class PortraiturePlusMod : Mod
 	{
+		public static IModHelper helper = null!;
+		private static readonly string week = (Game1.dayOfMonth % 7) switch
+		{
+			0 => "Sunday",
+			1 => "Monday",
+			2 => "Tuesday",
+			3 => "Wednesday",
+			4 => "Thursday",
+			5 => "Friday",
+			6 => "Saturday",
+			_ => ""
+		};
+		
 		private static readonly IDictionary<string, string> festivalDates = Game1.content.Load<Dictionary<string, string>>(@"Data\Festivals\FestivalDates", LocalizedContentManager.LanguageCode.en);
 		/// <summary>The mod entry point, called after the mod is first loaded.</summary>
 		/// <param name="help">Provides simplified APIs for writing mods.</param>
-		public override void Entry(IModHelper help)
+		public override void Entry(IModHelper? help)
 		{
+			helper = help!;
+			//var folders = new List<string>();
+			//var presets = new Dictionary<string, Texture2D>();
+			//addContentPackTextures(folders, presets);
 			festivalInit();
 			harmonyFix();
+		}
+		
+		public static void addContentPackTextures(List<string> folders, Dictionary<string, Texture2D> pTextures)
+		{
+			var contentPacks = helper.ContentPacks.GetOwned();
+			foreach (var pack in contentPacks)
+			{
+				var folderName = pack.Manifest.UniqueID;
+				var folderPath = pack.DirectoryPath;
+
+				folders.Add(folderName);
+				foreach (var file in Directory.EnumerateFiles(pack.DirectoryPath, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".png") || s.EndsWith(".xnb")))
+				{
+					var fileName = file.Replace(folderPath + "\\", "");
+					var name = Path.GetFileNameWithoutExtension(file);
+					var extension = Path.GetExtension(file).ToLower();
+					if (extension == "xnb")
+						fileName = name;
+					var texture = pack.ModContent.Load<Texture2D>(fileName);
+					var tileWith = Math.Max(texture.Width / 2, 64);
+					var scale = tileWith / 64f;
+					var scaled = new ScaledTexture2D(texture, scale);
+					if (!pTextures.ContainsKey(folderName + ">" + name))
+						pTextures.Add(folderName + ">" + name, scaled);
+					else
+						pTextures[folderName + ">" + name] = scaled;
+				}
+			}
 		}
 
 		private void harmonyFix()
 		{
 			PortraiturePlusFix.Initialize(monitor: Monitor);
 			var harmony = new Harmony(ModManifest.UniqueID);
-			harmony.Patch(original: PortraiturePlusFix.TargetMethod(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.getPortrait_Prefix))));
+			harmony.PatchAll();
+			harmony.Patch(original: PortraiturePlusFix.getPortrait(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.getPortrait_Prefix))));
+			harmony.Patch(original: PortraiturePlusFix.loadAllPortraits(), postfix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.loadAllPortraits_Postfix))));
 		}
 		
 		public static Texture2D? getPortrait(NPC npc, Texture2D tex, List<string> folders, PresetCollection presets, int activeFolder, Dictionary<string, Texture2D> pTextures)
@@ -78,17 +125,7 @@ namespace PortraiturePlus
 			var festival = GetDayEvent();
 			var gl = Game1.currentLocation.Name ?? "";
 			var isOutdoors = Game1.currentLocation.IsOutdoors ? "Outdoor" : "Indoor";
-			var week = (Game1.dayOfMonth % 7) switch
-			{
-				0 => "Sunday",
-				1 => "Monday",
-				2 => "Tuesday",
-				3 => "Wednesday",
-				4 => "Thursday",
-				5 => "Friday",
-				6 => "Saturday",
-				_ => ""
-			};
+			// var isRaining = Game1.isRaining ? "_Rain" : "";
 			name = folder + ">" + name;
 
 			var queryScenarios = new List<string[]>

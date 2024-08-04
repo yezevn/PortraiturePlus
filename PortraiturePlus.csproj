@@ -8,14 +8,12 @@
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
-    </ItemGroup>
+  <PropertyGroup>
+    <GamePath>E:\SteamLibrary\steamapps\common\Stardew Valley</GamePath>
+  </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Portraiture">
-        <HintPath>..\..\Software\Steam\steamapps\common\Stardew Valley\mods\Portraiture\Portraiture.dll</HintPath>
-      </Reference>
+      <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,6 +23,12 @@
       <Compile Update="PortraiturePlusMod.cs">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </Compile>
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(ExcludePortraiture)' != 'true'">
+        <Reference Include="Portraiture">
+            <HintPath>E:\SteamLibrary\steamapps\common\Stardew Valley\mods\Portraiture\Portraiture.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>
