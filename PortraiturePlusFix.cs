@@ -8,13 +8,13 @@ namespace PortraiturePlus
 {
 	internal class PortraiturePlusFix
 	{
-		private static IMonitor Monitor = null!;
+		private static IMonitor _monitor = null!;
 		
 		internal static void Initialize(IMonitor monitor)
 		{
-			Monitor = monitor;
+			_monitor = monitor;
 		}
-		internal static MethodInfo getPortrait()
+		internal static MethodInfo GetPortrait()
 		{
 			return AccessTools.Method("TextureLoader:getPortrait", new[]
 			{
@@ -22,7 +22,7 @@ namespace PortraiturePlus
 			});
 		}
 		
-		internal static MethodInfo loadAllPortraits()
+		internal static MethodInfo LoadAllPortraits()
 		{
 			return AccessTools.Method("TextureLoader:loadAllPortraits");
 		}
@@ -31,10 +31,10 @@ namespace PortraiturePlus
 		{
 			var folders = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<List<string>>("folders").Value;
 			var pTextures = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<Dictionary<string, Texture2D>>("pTextures").Value;
-			PortraiturePlusMod.addContentPackTextures(folders, pTextures);
+			PortraiturePlusMod.AddContentPackTextures(folders, pTextures);
 		}
 
-		internal static bool getPortrait_Prefix(NPC npc, Texture2D tex, ref Texture2D? __result)
+		internal static bool getPortrait_Prefix(NPC npc, Texture2D tex, ref Texture2D? result)
 		{
 			var folders = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<List<string>>("folders").Value;
 			var presets = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<PresetCollection>("presets").Value;
@@ -44,12 +44,12 @@ namespace PortraiturePlus
 				return true;
 			try
 			{
-				__result = PortraiturePlusMod.getPortrait(npc, tex, folders, presets, activeFolder, pTextures);
+				result = PortraiturePlusMod.GetPortrait(npc, tex, folders, presets, activeFolder, pTextures);
 				return false;
 			}
 			catch (Exception ex)
 			{
-				Monitor.Log($"Failed in {nameof(getPortrait_Prefix)}:\n{ex}", LogLevel.Error);
+				_monitor.Log($"Failed in {nameof(getPortrait_Prefix)}:\n{ex}", LogLevel.Error);
 				return true;
 			}
 		}

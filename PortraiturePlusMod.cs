@@ -11,8 +11,8 @@ namespace PortraiturePlus
 	// ReSharper disable once ClassNeverInstantiated.Global
 	internal sealed class PortraiturePlusMod : Mod
 	{
-		public static IModHelper helper = null!;
-		private static readonly string week = (Game1.dayOfMonth % 7) switch
+		private static IModHelper _helper = null!;
+		private static readonly string Week = (Game1.dayOfMonth % 7) switch
 		{
 			0 => "Sunday",
 			1 => "Monday",
@@ -24,22 +24,19 @@ namespace PortraiturePlus
 			_ => ""
 		};
 		
-		private static readonly IDictionary<string, string> festivalDates = Game1.content.Load<Dictionary<string, string>>(@"Data\Festivals\FestivalDates", LocalizedContentManager.LanguageCode.en);
-		/// <summary>The mod entry point, called after the mod is first loaded.</summary>
-		/// <param name="help">Provides simplified APIs for writing mods.</param>
+		private static readonly IDictionary<string, string> FestivalDates = 
+			Game1.content.Load<Dictionary<string, string>>(@"Data\Festivals\FestivalDates", LocalizedContentManager.LanguageCode.en);
+
 		public override void Entry(IModHelper? help)
 		{
-			helper = help!;
-			//var folders = new List<string>();
-			//var presets = new Dictionary<string, Texture2D>();
-			//addContentPackTextures(folders, presets);
-			festivalInit();
-			harmonyFix();
+			_helper = help!;
+			FestivalInit();
+			HarmonyFix();
 		}
 		
-		public static void addContentPackTextures(List<string> folders, Dictionary<string, Texture2D> pTextures)
+		public static void AddContentPackTextures(List<string> folders, Dictionary<string, Texture2D> pTextures)
 		{
-			var contentPacks = helper.ContentPacks.GetOwned();
+			var contentPacks = _helper.ContentPacks.GetOwned();
 			foreach (var pack in contentPacks)
 			{
 				var folderName = pack.Manifest.UniqueID;
@@ -65,16 +62,16 @@ namespace PortraiturePlus
 			}
 		}
 
-		private void harmonyFix()
+		private void HarmonyFix()
 		{
 			PortraiturePlusFix.Initialize(monitor: Monitor);
 			var harmony = new Harmony(ModManifest.UniqueID);
 			harmony.PatchAll();
-			harmony.Patch(original: PortraiturePlusFix.getPortrait(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.getPortrait_Prefix))));
-			harmony.Patch(original: PortraiturePlusFix.loadAllPortraits(), postfix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.loadAllPortraits_Postfix))));
+			harmony.Patch(original: PortraiturePlusFix.GetPortrait(), prefix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.getPortrait_Prefix))));
+			harmony.Patch(original: PortraiturePlusFix.LoadAllPortraits(), postfix: new HarmonyMethod(AccessTools.Method(typeof(PortraiturePlusFix), nameof(PortraiturePlusFix.loadAllPortraits_Postfix))));
 		}
 		
-		public static Texture2D? getPortrait(NPC npc, Texture2D tex, List<string> folders, PresetCollection presets, int activeFolder, Dictionary<string, Texture2D> pTextures)
+		public static Texture2D? GetPortrait(NPC npc, Texture2D tex, List<string> folders, PresetCollection presets, int activeFolder, Dictionary<string, Texture2D> pTextures)
 		{
 			var name = npc.Name;
 
@@ -116,7 +113,8 @@ namespace PortraiturePlus
 					return null;
 				}
 			}
-			
+			var raining = Game1.isRaining ? "Rain" : "";
+			var year = Game1.year.ToString();
 			var season = Game1.currentSeason ?? "spring";
 			var npcDictionary = pTextures.Keys
 				.Where(key => key.Contains(name) && key.Contains(folder))
@@ -131,17 +129,21 @@ namespace PortraiturePlus
 			var queryScenarios = new List<string[]>
 			{
 				new[] {name, festival},
-				new[] {name, gl, season, dayOfMonth}, new[] {name, gl, season, week},
+				new[] {name, gl, season, year, dayOfMonth}, new[] {name, gl, season, year, Week},
+				new[] {name, gl, season, dayOfMonth}, new[] {name, gl, season, Week},
 				new[] {name, gl, season},
-				new[] {name, gl, dayOfMonth}, new[] {name, gl, week},
+				new[] {name, gl, dayOfMonth}, new[] {name, gl, Week},
 				new[] {name, gl},
+				new[] {name, season, raining},
 				new[] {name, season, isOutdoors},
-				new[] {name, season, dayOfMonth}, new[] {name, season, week},
+				new[] {name, season, year, dayOfMonth}, new[] {name, season, year, Week},
+				new[] {name, season, dayOfMonth}, new[] {name, season, Week},
 				new[] {name, season},
+				new[] {name, raining},
 				new[] {name}
 			};
 
-			foreach (var result in queryScenarios.Select(args => getTexture2D(npcDictionary, args)).OfType<Texture2D>())
+			foreach (var result in queryScenarios.Select(args => GetTexture2D(npcDictionary, args)).OfType<Texture2D>())
 			{
 				return result;
 			}
@@ -154,36 +156,36 @@ namespace PortraiturePlus
 			if (SaveGame.loaded?.weddingToday ?? Game1.weddingToday || Game1.CurrentEvent != null && Game1.CurrentEvent.isWedding)
 				return "Wedding";
 
-			var festival = festivalDates.TryGetValue($"{Game1.currentSeason}{Game1.dayOfMonth}", out var festivalName) ? festivalName : "";
+			var festival = FestivalDates.TryGetValue($"{Game1.currentSeason}{Game1.dayOfMonth}", out var festivalName) ? festivalName : "";
 			return festival;
 		}
 		
-		private static Texture2D? getTexture2D(Dictionary<string, Texture2D> npcDictionary, params string[] values)
+		private static Texture2D? GetTexture2D(Dictionary<string, Texture2D> npcDictionary, params string[] values)
 		{
 			var key = values.Aggregate((current, next) => current + "_" + next).ToLowerInvariant().TrimEnd('_');
 			return values.Any(text => text == "") ? null : npcDictionary!.GetValueOrDefault(key, null);
 		}
 
-		private static void festivalInit()
+		private static void FestivalInit()
 		{
-			foreach (var key in festivalDates.Keys)
+			foreach (var key in FestivalDates.Keys)
 			{
-				if (festivalDates[key].Contains(' '))
+				if (FestivalDates[key].Contains(' '))
 				{
-					festivalDates[key] = festivalDates[key].Replace(" ", "");
+					FestivalDates[key] = FestivalDates[key].Replace(" ", "");
 				}
-				if (festivalDates[key].Contains('\''))
+				if (FestivalDates[key].Contains('\''))
 				{
-					festivalDates[key] = festivalDates[key].Replace("'", "");
+					FestivalDates[key] = FestivalDates[key].Replace("'", "");
 				}
-				festivalDates[key] = festivalDates[key] switch
+				FestivalDates[key] = FestivalDates[key] switch
 				{
 					"EggFestival" => "EggF",
 					"DanceoftheMoonlightJellies" => "Jellies",
 					"StardewValleyFair" => "Fair",
 					"FestivalofIce" => "Ice",
 					"FeastoftheWinterStar" => "WinterStar",
-					_ => festivalDates[key]
+					_ => FestivalDates[key]
 				};
 			}
 		}
