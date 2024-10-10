@@ -34,7 +34,8 @@ namespace PortraiturePlus
 			PortraiturePlusMod.AddContentPackTextures(folders, pTextures);
 		}
 
-		internal static bool getPortrait_Prefix(NPC npc, Texture2D tex, ref Texture2D? result)
+		// ReSharper disable once InconsistentNaming
+		internal static bool getPortrait_Prefix(NPC npc, Texture2D tex, ref Texture2D? __result)
 		{
 			var folders = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<List<string>>("folders").Value;
 			var presets = Traverse.Create(typeof(PortraitureMod).Assembly.GetType("Portraiture.TextureLoader")).Field<PresetCollection>("presets").Value;
@@ -44,7 +45,7 @@ namespace PortraiturePlus
 				return true;
 			try
 			{
-				result = PortraiturePlusMod.GetPortrait(npc, tex, folders, presets, activeFolder, pTextures);
+				__result = PortraiturePlusMod.GetPortrait(npc, tex, folders, presets, activeFolder, pTextures);
 				return false;
 			}
 			catch (Exception ex)
