@@ -134,6 +134,7 @@ namespace PortraiturePlus
 				new[] {name, gl, season},
 				new[] {name, gl, dayOfMonth}, new[] {name, gl, Week},
 				new[] {name, gl},
+ 				new[] {name, gl, raining},
 				new[] {name, season, raining},
 				new[] {name, season, isOutdoors},
 				new[] {name, season, year, dayOfMonth}, new[] {name, season, year, Week},
